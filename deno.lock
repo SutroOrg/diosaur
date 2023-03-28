@@ -1,0 +1,7 @@
+{
+  "version": "2",
+  "remote": {
+    "https://deno.land/x/reflect_metadata@v0.1.12/Reflect.ts": "eced7b7e642853c6fb9a209f96ddd1932ab1e0fc3c514705c87d56169c8fe260",
+    "https://deno.land/x/reflect_metadata@v0.1.12/mod.ts": "8b5e3b20f1e604c118df433e84a409b1d5116e885001047134cc42ecf84fa2cd"
+  }
+}
