@@ -178,6 +178,7 @@ class DependencyGraph {
         break;
       case "function":
         identifierString = identifier.name;
+        break;
       default:
         throw new Error(
           `identifier is a ${typeof identifier} which is not supported`
