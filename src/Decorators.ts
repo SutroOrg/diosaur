@@ -151,7 +151,7 @@ export const Parameter = (paramKey: string | symbol | Constructor) => {
       console.log(`Adding getter to ${String(key)} for ${String(paramKey)}`, {
         target,
       });
-      Object.defineProperty(target, key, {
+      Object.defineProperty(target.prototype, key, {
         get: () => {
           console.log(`Called getter for prop ${String(key)}`, target);
           return Registrer.getContainer().getParameter(paramKey);
