@@ -178,6 +178,10 @@ class DependencyGraph {
         break;
       case "function":
         identifierString = identifier.name;
+      default:
+        throw new Error(
+          `identifier is a ${typeof identifier} which is not supported`
+        );
     }
 
     return `${identifierString}(${tag || ""})`;
