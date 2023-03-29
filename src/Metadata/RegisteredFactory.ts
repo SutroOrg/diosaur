@@ -7,7 +7,5 @@ export default class RegisteredFactory {
     public readonly factory: IFactory,
     public readonly serviceClass: ServiceClassIdentifier,
     public readonly config: ServiceConfig
-  ) {
-    console.log(`RegisteredFactory`, { config, serviceClass });
-  }
+  ) {}
 }
