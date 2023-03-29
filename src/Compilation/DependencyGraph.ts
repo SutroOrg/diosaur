@@ -38,7 +38,6 @@ class DependencyGraph {
 
   build(): Graph {
     this.factories.forEach((registeredFactory) => {
-      console.log(`Adding factory to graph`, { registeredFactory });
       const { identifier } = registeredFactory.config;
       const key = DependencyGraph.serviceKey(
         identifier,
@@ -63,13 +62,11 @@ class DependencyGraph {
     });
 
     this.parameterBag.forEach((value, key) => {
-      console.log(`Adding param to graph`, { value, key });
       const paramKey = DependencyGraph.paramKey(key);
       this.dependencyGraph.addNode(paramKey, value);
     });
 
     this.injections.forEach((injectedService) => {
-      console.log(`Adding link to graph`, { injectedService });
       const serviceKey = this.serviceClassToKey.get(
         injectedService.serviceClass
       ) as string;
@@ -128,7 +125,6 @@ class DependencyGraph {
     });
 
     this.injectedParameters.forEach((injectedParameter) => {
-      console.log(`Adding link to graph`, { injectedParameter });
       const serviceKey = this.serviceClassToKey.get(
         injectedParameter.serviceClass
       ) as string;

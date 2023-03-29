@@ -148,14 +148,8 @@ export const Parameter = (paramKey: string | symbol | Constructor) => {
       Registrer.registerConstructorParameter(target, index, paramKey);
     } else {
       Registrer.registerAttributeParameter(target.constructor, key, paramKey);
-      console.log(`Adding getter to ${String(key)} for ${String(paramKey)}`, {
-        target,
-      });
-      Object.defineProperty(target.prototype, key, {
-        get: () => {
-          console.log(`Called getter for prop ${String(key)}`, target);
-          return Registrer.getContainer().getParameter(paramKey);
-        },
+      Object.defineProperty(target, key, {
+        get: () => Registrer.getContainer().getParameter(paramKey),
       });
     }
   };
