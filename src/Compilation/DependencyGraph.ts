@@ -168,10 +168,18 @@ class DependencyGraph {
   }
 
   static serviceKey(identifier: ServiceIdentifier, tag: string | null): string {
-    let identifierString = identifier.toString();
-    if (typeof identifier === "symbol") identifierString = uniqid();
-    else if (typeof identifier === "function")
-      identifierString = identifier.name;
+    let identifierString = "";
+    switch (typeof identifier) {
+      case "string":
+        identifierString = identifier.toString();
+        break;
+      case "symbol":
+        identifierString = uniqid();
+        break;
+      case "function":
+        identifierString = identifier.name;
+    }
+
     return `${identifierString}(${tag || ""})`;
   }
 
