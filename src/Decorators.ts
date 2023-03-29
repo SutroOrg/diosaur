@@ -152,7 +152,10 @@ export const Parameter = (paramKey: string | symbol | Constructor) => {
         target,
       });
       Object.defineProperty(target, key, {
-        get: () => Registrer.getContainer().getParameter(paramKey),
+        get: () => {
+          console.log(`Called getter for prop ${String(key)}`, target);
+          return Registrer.getContainer().getParameter(paramKey);
+        },
       });
     }
   };
