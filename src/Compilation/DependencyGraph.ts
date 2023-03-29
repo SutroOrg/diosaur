@@ -27,13 +27,16 @@ class DependencyGraph {
     private parameterBag: ParameterBag
   ) {}
 
-  getNodeByIdentifier(identifier: ServiceIdentifier, tag: string | null) {
+  getNodeByIdentifier(
+    identifier: ServiceIdentifier,
+    tag: string | null
+  ): Node | null {
     return this.dependencyGraph.getNode(
       DependencyGraph.serviceKey(identifier, tag)
     );
   }
 
-  build() {
+  build(): Graph {
     this.factories.forEach((registeredFactory) => {
       const { identifier } = registeredFactory.config;
       const key = DependencyGraph.serviceKey(
@@ -53,10 +56,9 @@ class DependencyGraph {
         this.identifierServices.set(identifier, []);
       }
 
-      // @ts-ignore
       this.identifierServices
-        .get(identifier)
-        .push(registeredFactory.serviceClass);
+        ?.get(identifier)
+        ?.push(registeredFactory.serviceClass);
     });
 
     this.parameterBag.forEach((value, key) => {
@@ -72,12 +74,14 @@ class DependencyGraph {
         injectedService.config.identifier,
         resolveTag(injectedService.config.tag, this.parameterBag)
       );
-      if (
-        !this.dependencyGraph.hasNode(serviceKey) ||
-        !this.dependencyGraph.hasNode(injectedServiceKey)
-      ) {
+      if (!this.dependencyGraph.hasNode(injectedServiceKey)) {
         throw new MissingServiceDefinitionError(
-          `Trying to inject service ${injectedServiceKey} into ${serviceKey} but one of them is not registered`
+          `Trying to inject service ${injectedServiceKey} into ${serviceKey} but ${injectedServiceKey} is not registered`
+        );
+      }
+      if (!this.dependencyGraph.hasNode(serviceKey)) {
+        throw new MissingServiceDefinitionError(
+          `Trying to inject service ${injectedServiceKey} into ${serviceKey} but ${serviceKey} one of them is not registered`
         );
       }
       this.dependencyGraph.addLink(
@@ -104,10 +108,10 @@ class DependencyGraph {
 
       if (!this.dependencyGraph.hasNode(allKey)) {
         this.dependencyGraph.addNode(allKey);
-        // @ts-ignore
+
         this.identifierServices
-          .get(identifier)
-          .map((serviceConstructor) =>
+          ?.get(identifier)
+          ?.map((serviceConstructor) =>
             this.serviceClassToKey.get(serviceConstructor)
           )
           .forEach((relatedDependencyKey) => {
@@ -163,7 +167,7 @@ class DependencyGraph {
     return leaves;
   }
 
-  static serviceKey(identifier: ServiceIdentifier, tag: string | null) {
+  static serviceKey(identifier: ServiceIdentifier, tag: string | null): string {
     let identifierString = identifier.toString();
     if (typeof identifier === "symbol") identifierString = uniqid();
     else if (typeof identifier === "function")
@@ -171,7 +175,7 @@ class DependencyGraph {
     return `${identifierString}(${tag || ""})`;
   }
 
-  static paramKey(identifier: ServiceIdentifier) {
+  static paramKey(identifier: ServiceIdentifier): string {
     let identifierString = identifier.toString();
     if (typeof identifier === "symbol") identifierString = uniqid();
     else if (typeof identifier === "function")
@@ -179,7 +183,7 @@ class DependencyGraph {
     return `param-${identifierString}`;
   }
 
-  static allServiceKey(identifier: ServiceIdentifier) {
+  static allServiceKey(identifier: ServiceIdentifier): string {
     return `all-${DependencyGraph.serviceKey(identifier, null)}`;
   }
 }

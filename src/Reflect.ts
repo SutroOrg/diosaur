@@ -1,3 +1,4 @@
+// deno-lint-ignore-file ban-types
 import { Reflect as MSReflect } from "https://deno.land/x/reflect_metadata@v0.1.12/mod.ts";
 import { AnyObject } from "./Types.ts";
 
@@ -11,7 +12,7 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/apply
    */
-  static apply(target: Function, thisArg: unknown, args: unknown[]) {
+  static apply(target: Function, thisArg: unknown, args: unknown[]): unknown {
     if (typeof target !== "function") {
       throw new TypeError("Pass non-function to Reflect.apply");
     }
@@ -30,7 +31,7 @@ export class Reflect {
     target: Function,
     argumentsList: unknown[],
     newTarget: Function = target
-  ) {
+  ): typeof newTarget {
     const obj = Object.create(target.prototype);
     return newTarget.apply(obj, argumentsList);
   }
@@ -42,7 +43,7 @@ export class Reflect {
     target: AnyObject,
     propertyKey: string,
     attributes: AnyObject
-  ) {
+  ): boolean {
     validateTarget(target, "defineProperty");
 
     if (typeof attributes !== "object") {
@@ -62,7 +63,7 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/deleteProperty
    */
-  static deleteProperty(target: AnyObject, property: string) {
+  static deleteProperty(target: AnyObject, property: string): boolean {
     validateTarget(target, "deleteProperty");
 
     try {
@@ -77,7 +78,10 @@ export class Reflect {
    *
    * No support for `receiver`
    */
-  static get(target: AnyObject, property: string) {
+  static get(
+    target: AnyObject,
+    property: string
+  ): typeof target[typeof property] {
     validateTarget(target, "get");
 
     try {
@@ -90,7 +94,10 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/getOwnPropertyDescriptor
    */
-  static getOwnPropertyDescriptor(target: AnyObject, property: string) {
+  static getOwnPropertyDescriptor(
+    target: AnyObject,
+    property: string
+  ): PropertyDescriptor | undefined {
     validateTarget(target, "getOwnPropertyDescriptor");
 
     return Object.getOwnPropertyDescriptor(target, property);
@@ -99,7 +106,7 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/getPrototypeOf
    */
-  static getPrototypeOf(target: AnyObject) {
+  static getPrototypeOf(target: AnyObject): any {
     validateTarget(target, "getPrototypeOf");
     return Object.getPrototypeOf(target);
   }
@@ -107,7 +114,7 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/has
    */
-  static has(target: AnyObject, property: string) {
+  static has(target: AnyObject, property: string): boolean {
     validateTarget(target, "has");
     return property in target;
   }
@@ -115,7 +122,7 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/isExtensible
    */
-  static isExtensible(target: AnyObject) {
+  static isExtensible(target: AnyObject): boolean {
     validateTarget(target, "isExtensible");
     return Object.isExtensible(target);
   }
@@ -134,7 +141,7 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/preventExtensions
    */
-  static preventExtensions(target: AnyObject) {
+  static preventExtensions(target: AnyObject): boolean {
     validateTarget(target, "preventExtensions");
     Object.preventExtensions(target);
     return !Object.isExtensible(target);
@@ -145,7 +152,7 @@ export class Reflect {
    *
    * No support for `receiver`
    */
-  static set(target: AnyObject, property: string, value: unknown) {
+  static set(target: AnyObject, property: string, value: unknown): boolean {
     validateTarget(target, "set");
 
     try {
@@ -159,7 +166,10 @@ export class Reflect {
   /**
    * Implements https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/setPrototypeOf
    */
-  static setPrototypeOf(target: AnyObject, prototype: AnyObject | null) {
+  static setPrototypeOf(
+    target: AnyObject,
+    prototype: AnyObject | null
+  ): boolean {
     validateTarget(target, "setPrototypeOf");
     if (typeof prototype !== "object") {
       throw new TypeError(
@@ -174,15 +184,15 @@ export class Reflect {
     }
   }
 
-  static getMetadata(metadataKey: any, target: any): any;
+  static getMetadata(metadataKey: unknown, target: unknown): any;
   static getMetadata(
-    metadataKey: any,
-    target: any,
+    metadataKey: unknown,
+    target: unknown,
     propertyKey: string | symbol
   ): any;
   static getMetadata(
-    metadataKey: any,
-    target: any,
+    metadataKey: unknown,
+    target: unknown,
     propertyKey?: string | symbol
   ): any {
     if (propertyKey !== undefined) {

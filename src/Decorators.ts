@@ -13,10 +13,10 @@ export interface ServiceConfig {
 }
 
 export const SCOPES = {
-  singleton: "singleton" as "singleton",
-  newable: "renewable" as "renewable",
-  custom: "custom" as "custom",
-};
+  singleton: "singleton",
+  newable: "renewable",
+  custom: "custom",
+} as const;
 
 export const defaultConfig = (
   identifier: ServiceIdentifier
@@ -47,7 +47,6 @@ export const Factory = (
       throw new IncorrectFactoryError(factoryConstructor);
     }
 
-    // @ts-ignore
     const isPromise =
       Reflect.getMetadata("design:returntype", factory, "resolve") === Promise;
     if (config.scoping && config.scoping !== SCOPES.singleton && isPromise) {
@@ -81,7 +80,6 @@ export const Inject = (config: Partial<InjectConfig> = {}) => {
         throw new NotInConstructorError();
       }
 
-      // @ts-ignore
       const constructorParamTypes = Reflect.getMetadata(
         "design:paramtypes",
         target,
@@ -93,7 +91,6 @@ export const Inject = (config: Partial<InjectConfig> = {}) => {
       };
       Registrer.registerConstructorInject(target, index, finalConfig);
     } else {
-      // @ts-ignore
       const serviceIdentifier = Reflect.getMetadata("design:type", target, key);
       const finalConfig: InjectConfig = {
         ...defaultInjectConfig(serviceIdentifier),
@@ -105,17 +102,13 @@ export const Inject = (config: Partial<InjectConfig> = {}) => {
 };
 
 /** Inject All */
-export const InjectAll = (
-  identifier: ServiceIdentifier,
-  refresh: boolean = false
-) => {
+export const InjectAll = (identifier: ServiceIdentifier, refresh = false) => {
   return (target: any, key: string | symbol, index?: number) => {
     if (typeof index === "number") {
       if (key !== undefined) {
         throw new NotInConstructorError();
       }
 
-      // @ts-ignore
       const constructorParamTypes = Reflect.getMetadata(
         "design:paramtypes",
         target,
