@@ -63,6 +63,7 @@ class DependencyGraph {
     });
 
     this.parameterBag.forEach((value, key) => {
+      console.log(`Adding param to graph`, { value, key });
       const paramKey = DependencyGraph.paramKey(key);
       this.dependencyGraph.addNode(paramKey, value);
     });
@@ -127,6 +128,7 @@ class DependencyGraph {
     });
 
     this.injectedParameters.forEach((injectedParameter) => {
+      console.log(`Adding link to graph`, { injectedParameter });
       const serviceKey = this.serviceClassToKey.get(
         injectedParameter.serviceClass
       ) as string;
