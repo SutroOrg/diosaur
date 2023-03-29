@@ -68,6 +68,7 @@ class DependencyGraph {
     });
 
     this.injections.forEach((injectedService) => {
+      console.log(`Adding link to graph`, { injectedService });
       const serviceKey = this.serviceClassToKey.get(
         injectedService.serviceClass
       ) as string;
