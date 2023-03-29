@@ -38,6 +38,7 @@ class DependencyGraph {
 
   build(): Graph {
     this.factories.forEach((registeredFactory) => {
+      console.log(`Adding factory to graph`, { registeredFactory });
       const { identifier } = registeredFactory.config;
       const key = DependencyGraph.serviceKey(
         identifier,
