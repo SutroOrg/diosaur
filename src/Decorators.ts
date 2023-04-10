@@ -89,6 +89,7 @@ export const Inject = ({
         tag,
         refresh,
       };
+      console.log(`Inject: ${JSON.stringify(finalConfig)}`);
       Registrar.registerAttributeInject(target.constructor, key, finalConfig);
     }
   };
