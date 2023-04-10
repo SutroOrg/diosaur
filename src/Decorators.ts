@@ -39,7 +39,7 @@ export const Service = (config: Partial<ServiceConfig> = {}) => {
       ...defaultConfig(target),
       ...config,
     };
-    console.log(`@Service: ${JSON.stringify({ config, finalConfig })}`);
+    console.log(`@Service: ${JSON.stringify({ config, target, finalConfig })}`);
     Registrar.registerService(target, finalConfig);
   };
 };
