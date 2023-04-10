@@ -38,13 +38,11 @@ class DependencyGraph {
 
   build(): Graph {
     this.factories.forEach((registeredFactory) => {
-      console.log(`build - Factory`, { config: registeredFactory.config });
       const { identifier } = registeredFactory.config;
       const key = DependencyGraph.serviceKey(
         identifier,
         registeredFactory.config.tag
       );
-      console.log(`build - Factory`, { key });
       if (key === undefined || key === null) {
         throw new Error(
           `The generated key for the following identifier came back undefined or null: ${JSON.stringify(
@@ -178,10 +176,6 @@ class DependencyGraph {
 
   static serviceKey(identifier: ServiceIdentifier, tag: string | null): string {
     let identifierString = "";
-    console.log(`DependencyGraph.serviceKey`, {
-      identifier,
-      typeof: typeof identifier,
-    });
     switch (typeof identifier) {
       case "string":
         identifierString = identifier.toString();
@@ -198,7 +192,7 @@ class DependencyGraph {
         );
     }
 
-    return `${identifierString}(${tag || ""})`;
+    return `${identifierString}${tag ? `(${tag})` : ""}`;
   }
 
   static paramKey(identifier: ServiceIdentifier): string {

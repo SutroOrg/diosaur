@@ -75,7 +75,6 @@ class Registrar {
     targetType: ServiceClassIdentifier,
     config: ServiceConfig
   ): void {
-    console.log(`registerFactory`, { targetType, config });
     Registrar.factories.push(
       new RegisteredFactory(factory, targetType, config)
     );

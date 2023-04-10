@@ -39,7 +39,7 @@ export const Service = (config: Partial<ServiceConfig> = {}) => {
       ...defaultConfig(target),
       ...config,
     };
-    console.log(`@Service`, {
+    console.debug(`@Service`, {
       config,
       target: target ?? "undefined",
       finalConfig,
@@ -95,7 +95,6 @@ export const Inject = ({
         tag,
         refresh,
       };
-      console.log(`Inject: ${JSON.stringify(finalConfig)}`);
       Registrar.registerAttributeInject(target.constructor, key, finalConfig);
     }
   };
@@ -124,9 +123,6 @@ export const Parameter = (paramKey: string | symbol | Constructor) => {
     key: string | symbol | undefined,
     index?: number
   ): void => {
-    console.log(
-      `@Parameter: ${JSON.stringify({ paramKey, target, key, index })}`
-    );
     if (typeof index === "number") {
       if (key !== undefined) {
         throw new NotInConstructorError();
