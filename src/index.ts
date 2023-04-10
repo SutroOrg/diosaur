@@ -1,6 +1,6 @@
 import { IContainer } from "./Container.ts";
 import { FunctionFactory } from "./Factory.ts";
-import Registrer from "./Metadata/Registrer.ts";
+import Registrar from "./Metadata/Registrar.ts";
 import { Constructor, ServiceIdentifier } from "./Types.ts";
 
 import {
@@ -18,18 +18,18 @@ export { Service, Inject, InjectAll, Factory, Parameter };
 export type { IContainer };
 
 export const getContainer = async (): Promise<IContainer> => {
-  return await Registrer.build();
+  return await Registrar.build();
 };
 
 export const refreshContainer = async (): Promise<IContainer> => {
-  return await Registrer.build(true);
+  return await Registrar.build(true);
 };
 
 export const setParameter = (
   key: string | symbol | Constructor,
   value: any
 ) => {
-  Registrer.setParameter(key, value);
+  Registrar.setParameter(key, value);
 };
 
 type anonymousFactory = ((args: any[]) => Object) | Object;
@@ -45,7 +45,7 @@ export const register = (
 ) => {
   const maker = typeof factory === "function" ? factory : () => factory;
   const fnFactory = new FunctionFactory(maker as () => Object);
-  Registrer.registerFactory(fnFactory, Symbol(identifier.toString()), {
+  Registrar.registerFactory(fnFactory, Symbol(identifier.toString()), {
     ...defaultConfig(identifier),
     ...config,
   });
@@ -64,7 +64,7 @@ export const registerAsync = (
       "Dynamically registered async factories must be registered as singletons"
     );
   }
-  Registrer.registerFactory(
+  Registrar.registerFactory(
     fnFactory,
     Symbol(identifier.toString()),
     finalConfig

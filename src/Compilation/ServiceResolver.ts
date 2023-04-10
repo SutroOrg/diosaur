@@ -38,7 +38,7 @@ class ServiceResolver {
   private singletons: Map<ServiceIdentifier, TagToService> = new Map();
 
   constructor(
-    private factories: RegisteredFactory[],
+    private factories: RegisteredFactory<unknown>[],
     injections: BaseInjectedService[],
     registeredParameters: BaseInjectedParameter[],
     registeredAllInjections: BaseInjectAllService[],
@@ -66,7 +66,7 @@ class ServiceResolver {
     });
   }
 
-  public async warmup() {
+  public async warmup(): Promise<void> {
     const singletons: Node[] = [];
     this.graph.forEachNode((node) => {
       if (
@@ -77,8 +77,8 @@ class ServiceResolver {
       }
     });
     for (const singleton of singletons) {
-      const { config } = singleton.data as RegisteredFactory;
-      const service = await this.instanciateAsync(singleton);
+      const { config } = singleton.data as RegisteredFactory<unknown>;
+      const service = await this.instantiateAsync(singleton);
       if (!this.singletons.has(config.identifier))
         this.singletons.set(config.identifier, new Map());
       (this.singletons.get(config.identifier) as TagToService).set(
@@ -88,13 +88,13 @@ class ServiceResolver {
     }
   }
 
-  public enterScope(scope: string) {
+  public enterScope(scope: string): void {
     if (!this.scopeServices.has(scope)) {
       this.scopeServices.set(scope, new Map());
     }
   }
 
-  public exitScope(scope: string) {
+  public exitScope(scope: string): void {
     if (this.scopeServices.has(scope)) {
       // Copy all service instance into other scopes if any
       const services = this.scopeServices.get(scope) as IdentifierToService;
@@ -105,7 +105,7 @@ class ServiceResolver {
             this.graph.getNode(
               DependencyGraph.serviceKey(identifier, tag)
             ) as Node
-          ).data as RegisteredFactory;
+          ).data as RegisteredFactory<unknown>;
           const intersectingScopes = this.getCurrentScopes().filter((it) =>
             config.customScopes.includes(it)
           );
@@ -135,11 +135,11 @@ class ServiceResolver {
     }
   }
 
-  public getParameter(paramKey: string | symbol | Constructor) {
+  public getParameter(paramKey: string | symbol | Constructor): any {
     return this.parameters.get(paramKey);
   }
 
-  public getAll(identifier: ServiceIdentifier) {
+  public getAll(identifier: ServiceIdentifier): any[] {
     if (!this.identifierTags.has(identifier)) {
       throw new UnregisteredServiceError(identifier, null, true);
     }
@@ -148,7 +148,7 @@ class ServiceResolver {
     );
   }
 
-  public get(identifier: ServiceIdentifier, tag: string | null) {
+  public get(identifier: ServiceIdentifier, tag: string | null): any {
     tag = this.resolveTag(tag);
     const node = this.graph.getNode(
       DependencyGraph.serviceKey(identifier, tag)
@@ -156,13 +156,13 @@ class ServiceResolver {
     if (!node) {
       throw new UnregisteredServiceError(identifier, tag);
     }
-    const serviceConfig = node.data as RegisteredFactory;
+    const serviceConfig = node.data as RegisteredFactory<unknown>;
     switch (serviceConfig.config.scoping) {
       case SCOPES.singleton:
         return (this.singletons.get(identifier) as TagToService).get(tag);
       case SCOPES.newable:
-        return this.instanciate(node);
-      case SCOPES.custom:
+        return this.instantiate(node);
+      case SCOPES.custom: {
         const availableScopes = this.getCurrentScopes().filter((it) =>
           serviceConfig.config.customScopes.includes(it)
         );
@@ -186,7 +186,7 @@ class ServiceResolver {
           }
         }
         // No service in scope yet, add a new
-        const service = this.instanciate(node);
+        const service = this.instantiate(node);
         if (availableScopes.length > 0) {
           const scope = availableScopes[0];
           if (!this.scopeServices.has(scope))
@@ -208,6 +208,7 @@ class ServiceResolver {
           ).set(tag, service);
         }
         return service;
+      }
       default:
         throw new Error(`Unknown scope type ${serviceConfig.config.scoping}`);
     }
@@ -217,7 +218,7 @@ class ServiceResolver {
     return [...this.scopeServices.keys()];
   }
 
-  private resolveTag(tag: string | null) {
+  private resolveTag(tag: string | null): typeof tag {
     if (tag !== null && tag.startsWith("@")) {
       const paramKey = tag.slice(1);
       if (!this.parameters.has(paramKey)) {
@@ -229,16 +230,16 @@ class ServiceResolver {
     return tag;
   }
 
-  private instanciate(node: Node) {
-    const config = node.data as RegisteredFactory;
+  private instantiate(node: Node): object {
+    const config = node.data as RegisteredFactory<object>;
     const [constructorParams, attributes] = this.buildServiceDependencies(node);
     // Factory resolve is not async, we block it in decorator thus we can simply call resolve
     const service = config.factory.resolve(constructorParams);
     return this.postServiceCreation(service, attributes);
   }
 
-  private async instanciateAsync(node: Node) {
-    const config = node.data as RegisteredFactory;
+  private async instantiateAsync(node: Node): Promise<object> {
+    const config = node.data as RegisteredFactory<object>;
     const [constructorParams, attributes] =
       await this.buildServiceDependenciesAsync(node);
     const service = await config.factory.resolve(constructorParams);
@@ -248,7 +249,7 @@ class ServiceResolver {
   private postServiceCreation(
     service: object,
     attributes: { key: string | symbol; arg: any }[]
-  ) {
+  ): object {
     attributes.forEach(({ key, arg }) => {
       Reflect.defineProperty(service, key, {
         get: () => arg,
@@ -262,7 +263,7 @@ class ServiceResolver {
     attributes: { key: string | symbol; arg: any }[],
     arg: any,
     data: BaseInjectAllService | BaseInjectedParameter | BaseInjectedService
-  ) {
+  ): void {
     if (data.getType() === "constructor") {
       parameters.push({
         arg,
@@ -359,19 +360,22 @@ class ServiceResolver {
     ];
   }
 
-  private async getAllAsync(identifier: ServiceIdentifier) {
+  private async getAllAsync(identifier: ServiceIdentifier): Promise<any[]> {
     if (!this.identifierTags.has(identifier)) {
       throw new UnregisteredServiceError(identifier, null, true);
     }
     const services = [];
-    // @ts-ignore
-    for (const tag of this.identifierTags.get(identifier)) {
+
+    for (const tag of this.identifierTags.get(identifier) ?? []) {
       services.push(await this.getAsync(identifier, tag));
     }
     return services;
   }
 
-  private async getAsync(identifier: ServiceIdentifier, tag: string | null) {
+  private async getAsync(
+    identifier: ServiceIdentifier,
+    tag: string | null
+  ): Promise<object | undefined> {
     tag = this.resolveTag(tag);
     const node = this.graph.getNode(
       DependencyGraph.serviceKey(identifier, tag)
@@ -379,14 +383,14 @@ class ServiceResolver {
     if (!node) {
       throw new UnregisteredServiceError(identifier, tag);
     }
-    const data = node.data as RegisteredFactory;
+    const data = node.data as RegisteredFactory<unknown>;
     if (data.config.scoping === SCOPES.singleton) {
       const existingInstance = (
         this.singletons.get(data.config.identifier) as TagToService
       ).get(data.config.tag);
       return existingInstance
         ? existingInstance
-        : await this.instanciateAsync(node);
+        : await this.instantiateAsync(node);
     } else return this.get(identifier, tag);
   }
 }

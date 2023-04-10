@@ -20,7 +20,7 @@ class DependencyGraph {
     new Map();
 
   constructor(
-    private factories: RegisteredFactory[],
+    private factories: RegisteredFactory<unknown>[],
     private injections: BaseInjectedService[],
     private injectedParameters: BaseInjectedParameter[],
     private allInjections: BaseInjectAllService[],
@@ -43,6 +43,13 @@ class DependencyGraph {
         identifier,
         registeredFactory.config.tag
       );
+      if (key === undefined) {
+        throw new Error(
+          `The generated key for the following identifier came back undefined: ${JSON.stringify(
+            identifier
+          )}`
+        );
+      }
       if (this.dependencyGraph.hasNode(key)) {
         throw new Error(
           `Trying to register ${registeredFactory.serviceClass.toString()}, but another service exist for the same identifier and same tag`
@@ -76,12 +83,12 @@ class DependencyGraph {
       );
       if (!this.dependencyGraph.hasNode(injectedServiceKey)) {
         throw new MissingServiceDefinitionError(
-          `Trying to inject service ${injectedServiceKey} into ${serviceKey} but ${injectedServiceKey} is not registered`
+          `Trying to inject service ${injectedServiceKey} into ${serviceKey} but '${injectedServiceKey}' is not registered`
         );
       }
       if (!this.dependencyGraph.hasNode(serviceKey)) {
         throw new MissingServiceDefinitionError(
-          `Trying to inject service ${injectedServiceKey} into ${serviceKey} but ${serviceKey} one of them is not registered`
+          `Trying to inject service ${injectedServiceKey} into ${serviceKey} but '${serviceKey}' is not registered`
         );
       }
       this.dependencyGraph.addLink(

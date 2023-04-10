@@ -3,7 +3,7 @@ import { Container, IContainer } from "../Container.ts";
 import { InjectConfig, ServiceConfig } from "../Decorators.ts";
 import { NotBuiltContainerError } from "../Errors.ts";
 import { BasicFactory } from "../Factory.ts";
-import IFactory from "../IFactory.ts";
+import { IFactory } from "../IFactory.ts";
 import {
   Constructor,
   ParameterBag,
@@ -27,10 +27,10 @@ import {
   ConstructorInjectedService,
 } from "./ServiceInjection.ts";
 
-class Registrer {
+class Registrar {
   private static parameters: ParameterBag = new Map();
 
-  private static factories: Array<RegisteredFactory> = [];
+  private static factories: Array<RegisteredFactory<unknown>> = [];
 
   private static injections: Array<BaseInjectedService> = [];
 
@@ -41,14 +41,14 @@ class Registrer {
   private static _container: IContainer | null = null;
 
   static getContainer(): IContainer {
-    if (!Registrer._container) {
+    if (!Registrar._container) {
       throw new NotBuiltContainerError();
     }
-    return Registrer._container;
+    return Registrar._container;
   }
 
-  static async build(refresh: boolean = false) {
-    if (Registrer._container && !refresh) return Registrer._container;
+  static async build(refresh = false): Promise<IContainer> {
+    if (Registrar._container && !refresh) return Registrar._container;
 
     const resolver = new ServiceResolver(
       this.factories,
@@ -58,24 +58,24 @@ class Registrer {
       this.parameters
     );
     await resolver.warmup();
-    Registrer._container = new Container(resolver);
-    return Registrer._container;
+    Registrar._container = new Container(resolver);
+    return Registrar._container;
   }
 
-  static setParameter(key: string | symbol | Constructor, value: any) {
-    Registrer.parameters.set(key, value);
+  static setParameter(key: string | symbol | Constructor, value: any): void {
+    Registrar.parameters.set(key, value);
   }
 
-  static registerService(targetType: Constructor, config: ServiceConfig) {
+  static registerService(targetType: Constructor, config: ServiceConfig): void {
     this.registerFactory(new BasicFactory(targetType), targetType, config);
   }
 
-  static registerFactory(
-    factory: IFactory,
+  static registerFactory<R>(
+    factory: IFactory<R>,
     targetType: ServiceClassIdentifier,
     config: ServiceConfig
-  ) {
-    Registrer.factories.push(
+  ): void {
+    Registrar.factories.push(
       new RegisteredFactory(factory, targetType, config)
     );
   }
@@ -84,8 +84,8 @@ class Registrer {
     service: ServiceClassIdentifier,
     key: string | symbol,
     config: InjectConfig
-  ) {
-    Registrer.injections.push(
+  ): void {
+    Registrar.injections.push(
       new AttributeInjectedService(service, key, config)
     );
   }
@@ -94,8 +94,8 @@ class Registrer {
     service: ServiceClassIdentifier,
     index: number,
     config: InjectConfig
-  ) {
-    Registrer.injections.push(
+  ): void {
+    Registrar.injections.push(
       new ConstructorInjectedService(service, index, config)
     );
   }
@@ -104,8 +104,8 @@ class Registrer {
     service: ServiceClassIdentifier,
     key: string | symbol,
     paramKey: string | symbol | Constructor
-  ) {
-    Registrer.injectedParameters.push(
+  ): void {
+    Registrar.injectedParameters.push(
       new AttributeInjectedParameter(service, key, paramKey)
     );
   }
@@ -114,8 +114,8 @@ class Registrer {
     service: ServiceClassIdentifier,
     index: number,
     paramKey: string | symbol | Constructor
-  ) {
-    Registrer.injectedParameters.push(
+  ): void {
+    Registrar.injectedParameters.push(
       new ConstructorInjectedParameter(service, index, paramKey)
     );
   }
@@ -125,8 +125,8 @@ class Registrer {
     identifier: ServiceIdentifier,
     paramKey: string | symbol,
     refresh: boolean
-  ) {
-    Registrer.allInjections.push(
+  ): void {
+    Registrar.allInjections.push(
       new AttributeInjectAllService(service, identifier, paramKey, refresh)
     );
   }
@@ -136,11 +136,11 @@ class Registrer {
     identifier: ServiceIdentifier,
     index: number,
     refresh: boolean
-  ) {
-    Registrer.allInjections.push(
+  ): void {
+    Registrar.allInjections.push(
       new ConstructorInjectAllService(service, identifier, index, refresh)
     );
   }
 }
 
-export default Registrer;
+export default Registrar;

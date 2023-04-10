@@ -1,26 +1,26 @@
-import IFactory from "./IFactory.ts";
+import { IFactory, IAsyncFactory, NoPromise } from "./IFactory.ts";
 import { Constructor } from "./Types.ts";
 
-export class BasicFactory implements IFactory {
+export class BasicFactory<R> implements IFactory<R> {
   constructor(private targetType: Constructor) {}
 
-  resolve(data: any[]) {
+  resolve(data: any[]): any {
     return Reflect.construct(this.targetType, data);
   }
 }
 
-export class FunctionFactory implements IFactory {
-  constructor(private serviceMaker: (args: any[]) => Object) {}
+export class FunctionFactory<R> implements IFactory<R> {
+  constructor(private serviceMaker: (args: any[]) => NoPromise<R>) {}
 
-  resolve(data: any[]) {
+  resolve(data: any[]): NoPromise<R> {
     return this.serviceMaker(data);
   }
 }
 
-export class AsyncFunctionFactory implements IFactory {
-  constructor(private serviceMaker: (args: any[]) => Promise<Object>) {}
+export class AsyncFunctionFactory<R> implements IAsyncFactory<R> {
+  constructor(private serviceMaker: (args: any[]) => Promise<R>) {}
 
-  async resolve(data: any) {
+  async resolve(data: any): Promise<R> {
     return await this.serviceMaker(data);
   }
 }

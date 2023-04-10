@@ -1,7 +1,10 @@
-import { IncorrectFactoryError, NotInConstructorError } from "./Errors.ts";
-import IFactory from "./IFactory.ts";
-import Registrer from "./Metadata/Registrer.ts";
-import { Reflect } from "./Reflect.ts";
+import {
+  IncorrectFactoryError,
+  InjectAsParameterError,
+  NotInConstructorError,
+} from "./Errors.ts";
+import { IFactory } from "./IFactory.ts";
+import Registrar from "./Metadata/Registrar.ts";
 import { Constructor, ServiceIdentifier } from "./Types.ts";
 
 /** Service */
@@ -27,9 +30,12 @@ export const defaultConfig = (
   customScopes: [],
 });
 
+/**
+ *
+ */
 export const Service = (config: Partial<ServiceConfig> = {}) => {
   return <T extends Constructor>(target: T) => {
-    Registrer.registerService(target, {
+    Registrar.registerService(target, {
       ...defaultConfig(target),
       ...config,
     });
@@ -41,19 +47,18 @@ export const Factory = (
   createdService: ServiceIdentifier,
   config: Partial<ServiceConfig> = {}
 ) => {
-  return <T extends Constructor<IFactory>>(factoryConstructor: T) => {
+  return <T extends Constructor<IFactory<unknown>>>(factoryConstructor: T) => {
     const factory = new factoryConstructor();
     if (!("resolve" in factory)) {
       throw new IncorrectFactoryError(factoryConstructor);
     }
 
-    const isPromise =
-      Reflect.getMetadata("design:returntype", factory, "resolve") === Promise;
+    const isPromise = false;
     if (config.scoping && config.scoping !== SCOPES.singleton && isPromise) {
       throw new Error("Async factories MUST be scoped as singletons");
     }
 
-    Registrer.registerFactory(factory, createdService, {
+    Registrar.registerFactory(factory, createdService, {
       ...defaultConfig(createdService),
       ...config,
     });
@@ -66,37 +71,25 @@ export interface InjectConfig {
   identifier: ServiceIdentifier;
   refresh: boolean;
 }
+interface InjectOptions extends Partial<InjectConfig> {
+  identifier: InjectConfig["identifier"];
+}
 
-export const defaultInjectConfig = (identifier: ServiceIdentifier) => ({
+export const Inject = ({
   identifier,
-  tag: null,
-  refresh: false,
-});
-
-export const Inject = (config: Partial<InjectConfig> = {}) => {
+  tag = null,
+  refresh = false,
+}: InjectOptions) => {
   return (target: any, key: string | symbol, index?: number) => {
     if (typeof index === "number") {
-      if (key !== undefined) {
-        throw new NotInConstructorError();
-      }
-
-      const constructorParamTypes = Reflect.getMetadata(
-        "design:paramtypes",
-        target,
-        key
-      );
-      const finalConfig = {
-        ...defaultInjectConfig(constructorParamTypes[index]),
-        ...config,
-      };
-      Registrer.registerConstructorInject(target, index, finalConfig);
+      throw new InjectAsParameterError();
     } else {
-      const serviceIdentifier = Reflect.getMetadata("design:type", target, key);
       const finalConfig: InjectConfig = {
-        ...defaultInjectConfig(serviceIdentifier),
-        ...config,
+        identifier,
+        tag,
+        refresh,
       };
-      Registrer.registerAttributeInject(target.constructor, key, finalConfig);
+      Registrar.registerAttributeInject(target.constructor, key, finalConfig);
     }
   };
 };
@@ -105,29 +98,9 @@ export const Inject = (config: Partial<InjectConfig> = {}) => {
 export const InjectAll = (identifier: ServiceIdentifier, refresh = false) => {
   return (target: any, key: string | symbol, index?: number) => {
     if (typeof index === "number") {
-      if (key !== undefined) {
-        throw new NotInConstructorError();
-      }
-
-      const constructorParamTypes = Reflect.getMetadata(
-        "design:paramtypes",
-        target,
-        key
-      );
-      const paramType = constructorParamTypes[index];
-      if (paramType.name !== "Array") {
-        throw new Error(
-          `@InjectAll decorator can only be used with an array parameter on service ${target.name}`
-        );
-      }
-      Registrer.registerConstructorAllService(
-        target,
-        identifier,
-        index,
-        refresh
-      );
+      throw new InjectAsParameterError();
     } else {
-      Registrer.registerAttributeAllService(
+      Registrar.registerAttributeAllService(
         target.constructor,
         identifier,
         key,
@@ -139,17 +112,26 @@ export const InjectAll = (identifier: ServiceIdentifier, refresh = false) => {
 
 /** Parameter injection */
 export const Parameter = (paramKey: string | symbol | Constructor) => {
-  return (target: any, key: string | symbol, index?: number) => {
+  return (
+    target: any,
+    key: string | symbol | undefined,
+    index?: number
+  ): void => {
     if (typeof index === "number") {
       if (key !== undefined) {
         throw new NotInConstructorError();
       }
 
-      Registrer.registerConstructorParameter(target, index, paramKey);
+      Registrar.registerConstructorParameter(target, index, paramKey);
     } else {
-      Registrer.registerAttributeParameter(target.constructor, key, paramKey);
+      if (key === undefined) {
+        throw new Error(
+          "Parameter injection failed because `key` is undefined in the decorator!"
+        );
+      }
+      Registrar.registerAttributeParameter(target.constructor, key, paramKey);
       Object.defineProperty(target, key, {
-        get: () => Registrer.getContainer().getParameter(paramKey),
+        get: () => Registrar.getContainer().getParameter(paramKey),
       });
     }
   };

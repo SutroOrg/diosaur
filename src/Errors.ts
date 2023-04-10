@@ -46,3 +46,9 @@ export class NotBuiltContainerError extends Error {
     super("Container not yet built, you cannot query it");
   }
 }
+
+export class InjectAsParameterError extends Error {
+  constructor() {
+    super("Injecting services as method parameters is not currently supported");
+  }
+}

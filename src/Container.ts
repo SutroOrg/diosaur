@@ -19,11 +19,11 @@ export interface IContainer {
 export class Container implements IContainer {
   constructor(private resolver: ServiceResolver) {}
 
-  enterScope(scope: string) {
+  enterScope(scope: string): void {
     this.resolver.enterScope(scope);
   }
 
-  exitScope(scope: string) {
+  exitScope(scope: string): void {
     this.resolver.exitScope(scope);
   }
 

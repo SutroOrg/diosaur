@@ -1,5 +1,4 @@
 // deno-lint-ignore-file ban-types
-import { Reflect as MSReflect } from "https://deno.land/x/reflect_metadata@v0.1.12/mod.ts";
 import { AnyObject } from "./Types.ts";
 
 function validateTarget(o: unknown, method: string): asserts o is AnyObject {
@@ -182,22 +181,5 @@ export class Reflect {
     } catch (_) {
       return false;
     }
-  }
-
-  static getMetadata(metadataKey: unknown, target: unknown): any;
-  static getMetadata(
-    metadataKey: unknown,
-    target: unknown,
-    propertyKey: string | symbol
-  ): any;
-  static getMetadata(
-    metadataKey: unknown,
-    target: unknown,
-    propertyKey?: string | symbol
-  ): any {
-    if (propertyKey !== undefined) {
-      return MSReflect.getMetadata(metadataKey, target, propertyKey);
-    }
-    return MSReflect.getMetadata(metadataKey, target);
   }
 }

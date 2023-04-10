@@ -1,8 +1,4 @@
 {
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
-  },
   "tasks": {
     "dev": "deno run --watch main.ts"
   },
@@ -11,6 +7,7 @@
       "include": ["."]
     },
     "rules": {
+      "tags": ["recommended"],
       "include": ["explicit-function-return-type"],
       "exclude": ["no-empty-interface"]
     }
