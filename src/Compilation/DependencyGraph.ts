@@ -75,6 +75,7 @@ class DependencyGraph {
     });
 
     this.injections.forEach((injectedService) => {
+      console.log("injections", { injectedService });
       const serviceKey = this.serviceClassToKey.get(
         injectedService.serviceClass
       ) as string;
