@@ -8,7 +8,7 @@ By default every declared service is scoped as a singleton. This means that when
 A singleton service will live as long as your program lives.
 
 ```typescript
-@Service({ scoping: "singleton" }) // optional, it's singleton by default
+@Service({ scoping: SCOPE.singleton }) // optional, it's singleton by default
 class SingletonService {
   public readonly sym = Symbol();
 }

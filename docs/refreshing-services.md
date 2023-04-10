@@ -27,7 +27,7 @@ If you need to refresh your service dependencies, you can use the custom `refres
 decorators.
 
 ```typescript
-@Service({ scoping: "renewable" })
+@Service({ scoping: SCOPE.renewable })
 class Renewable {
   public readonly sym = Symbol();
 }

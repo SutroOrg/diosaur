@@ -1,27 +1,22 @@
-import {
-  getContainer,
-  register,
-  registerAsync,
-  refreshContainer,
-} from "./index.ts";
+import { getContainer } from "./index.ts";
 import { IContainer } from "./Container.ts";
-import { Service, Inject } from "./Decorators.ts";
+import { Service, Inject, SCOPE } from "./Decorators.ts";
 import { describe, it } from "https://deno.land/std@0.177.0/testing/bdd.ts";
 import chai from "https://cdn.skypack.dev/chai@4.3.4?dts";
 
 const expect = chai.expect;
 
-@Service({ scoping: "singleton" })
+@Service({ scoping: SCOPE.singleton })
 class Singleton {
   public readonly sym = Symbol();
 }
 
-@Service({ scoping: "renewable" })
+@Service({ scoping: SCOPE.renewable })
 class Renewable {
   public readonly sym = Symbol();
 }
 
-@Service({ scoping: "custom", customScopes: ["scope1", "scope2"] })
+@Service({ scoping: SCOPE.custom, customScopes: ["scope1", "scope2"] })
 class Custom {
   public readonly sym = Symbol();
 }

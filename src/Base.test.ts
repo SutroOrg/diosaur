@@ -1,6 +1,6 @@
 import { Service, getContainer, setParameter, Inject } from "./index.ts";
 import { Container, IContainer } from "./Container.ts";
-import { SCOPES, InjectAll, Parameter } from "./Decorators.ts";
+import { SCOPE, InjectAll, Parameter } from "./Decorators.ts";
 import { describe, it } from "https://deno.land/std@0.177.0/testing/bdd.ts";
 import chai from "https://cdn.skypack.dev/chai@4.3.4?dts";
 const expect = chai.expect;
@@ -53,7 +53,7 @@ describe("Diosaur service registration", () => {
     public readonly s!: S;
   }
 
-  @Service({ scoping: SCOPES.newable })
+  @Service({ scoping: SCOPE.renewable })
   class Random {
     public readonly n: Symbol = Symbol(Math.ceil(Math.random() * 1000));
   }
@@ -75,19 +75,19 @@ describe("Diosaur service registration", () => {
   }
 
   @Service({
-    scoping: SCOPES.custom,
+    scoping: SCOPE.custom,
     customScopes: ["scope1"],
   })
   class Scoped1 extends subScoped {}
 
   @Service({
-    scoping: SCOPES.custom,
+    scoping: SCOPE.custom,
     customScopes: ["scope2"],
   })
   class Scoped2 extends subScoped {}
 
   @Service({
-    scoping: SCOPES.custom,
+    scoping: SCOPE.custom,
     customScopes: ["scope1", "scope2"],
   })
   class ScopedAll extends subScoped {}

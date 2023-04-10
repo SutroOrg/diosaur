@@ -3,7 +3,7 @@ import { FunctionFactory } from "./Factory.ts";
 import Registrar from "./Metadata/Registrar.ts";
 import { Constructor, ServiceIdentifier } from "./Types.ts";
 
-import { defaultConfig, SCOPES, ServiceConfig } from "./Decorators.ts";
+import { defaultConfig, SCOPE, ServiceConfig } from "./Decorators.ts";
 
 export type { IFactory, IAsyncFactory } from "./IFactory.ts";
 
@@ -14,8 +14,6 @@ export {
   Factory,
   Parameter,
 } from "./Decorators.ts";
-
-export type { IContainer } from "./Container.ts";
 
 export async function getContainer(): Promise<IContainer> {
   return await Registrar.build();
@@ -59,7 +57,7 @@ export async function registerAsync(
   const maker = typeof factory === "function" ? factory : () => factory;
   const finalConfig = { ...defaultConfig(identifier), ...config };
   const fnFactory = new FunctionFactory(maker as () => Object);
-  if (finalConfig.scoping !== SCOPES.singleton) {
+  if (finalConfig.scoping !== SCOPE.singleton) {
     throw new Error(
       "Dynamically registered async factories must be registered as singletons"
     );

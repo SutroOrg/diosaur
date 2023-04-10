@@ -1,4 +1,4 @@
-import { SCOPES } from "../Decorators.ts";
+import { SCOPE } from "../Decorators.ts";
 import { Reflect } from "../Reflect.ts";
 import { UnregisteredServiceError } from "../Errors.ts";
 import {
@@ -77,7 +77,7 @@ class ServiceResolver {
     this.graph.forEachNode((node) => {
       if (
         node.data instanceof RegisteredFactory &&
-        node.data.config.scoping === SCOPES.singleton
+        node.data.config.scoping === SCOPE.singleton
       ) {
         singletons.push(node);
       }
@@ -164,11 +164,11 @@ class ServiceResolver {
     }
     const serviceConfig = node.data as RegisteredFactory<unknown>;
     switch (serviceConfig.config.scoping) {
-      case SCOPES.singleton:
+      case SCOPE.singleton:
         return (this.singletons.get(identifier) as TagToService).get(tag);
-      case SCOPES.newable:
+      case SCOPE.renewable:
         return this.instantiate(node);
-      case SCOPES.custom: {
+      case SCOPE.custom: {
         const availableScopes = this.getCurrentScopes().filter((it) =>
           serviceConfig.config.customScopes.includes(it)
         );
@@ -390,7 +390,7 @@ class ServiceResolver {
       throw new UnregisteredServiceError(identifier, tag);
     }
     const data = node.data as RegisteredFactory<unknown>;
-    if (data.config.scoping === SCOPES.singleton) {
+    if (data.config.scoping === SCOPE.singleton) {
       const existingInstance = (
         this.singletons.get(data.config.identifier) as TagToService
       ).get(data.config.tag);
