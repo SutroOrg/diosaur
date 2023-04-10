@@ -39,11 +39,6 @@ export const Service = (config: Partial<ServiceConfig> = {}) => {
       ...defaultConfig(target),
       ...config,
     };
-    console.debug(`@Service`, {
-      config,
-      target: target ?? "undefined",
-      finalConfig,
-    });
     Registrar.registerService(target, finalConfig);
   };
 };
