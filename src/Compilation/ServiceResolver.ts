@@ -237,7 +237,6 @@ class ServiceResolver {
   }
 
   private instantiate(node: Node): AnyObject {
-    console.log(`ServiceResolver.instantiate...`, { node });
     const config = node.data as RegisteredFactory<AnyObject>;
     const [constructorParams, attributes] = this.buildServiceDependencies(node);
     // Factory resolve is not async, we block it in decorator thus we can simply call resolve
@@ -246,7 +245,6 @@ class ServiceResolver {
   }
 
   private async instantiateAsync(node: Node): Promise<AnyObject> {
-    console.log(`ServiceResolver.instantiateAsync...`, { node });
     const config = node.data as RegisteredFactory<AnyObject>;
     const [constructorParams, attributes] =
       await this.buildServiceDependenciesAsync(node);
@@ -259,7 +257,6 @@ class ServiceResolver {
     attributes: { key: string | symbol; arg: any }[]
   ): AnyObject {
     attributes.forEach(({ key, arg }) => {
-      console.log(`ServiceResolver.postServiceCreation`, { service, key, arg });
       Reflect.defineProperty(service, key, {
         get: () => arg,
       });

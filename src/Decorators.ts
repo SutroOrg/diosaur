@@ -95,7 +95,6 @@ export const Inject = ({
         tag,
         refresh,
       };
-      console.log("@Inject", { target, key, index, identifier });
       Registrar.registerAttributeInject(target.constructor, key, finalConfig);
     }
   };

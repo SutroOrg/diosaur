@@ -85,13 +85,11 @@ class Registrar {
     key: string | symbol,
     config: InjectConfig
   ): void {
-    console.log(`Registrar.registerAttributeInject`, { service, key, config });
     const newAttributeService = new AttributeInjectedService(
       service,
       key,
       config
     );
-    console.log({ newAttributeService });
     Registrar.injections.push(newAttributeService);
   }
 
