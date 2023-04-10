@@ -35,10 +35,12 @@ export const defaultConfig = (
  */
 export const Service = (config: Partial<ServiceConfig> = {}) => {
   return <T extends Constructor>(target: T) => {
-    Registrar.registerService(target, {
+    const finalConfig = {
       ...defaultConfig(target),
       ...config,
-    });
+    };
+    console.log(`@Service: ${JSON.stringify({ config, finalConfig })}`);
+    Registrar.registerService(target, finalConfig);
   };
 };
 
