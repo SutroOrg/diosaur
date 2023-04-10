@@ -39,7 +39,13 @@ export const Service = (config: Partial<ServiceConfig> = {}) => {
       ...defaultConfig(target),
       ...config,
     };
-    console.log(`@Service: ${JSON.stringify({ config, target, finalConfig })}`);
+    console.log(
+      `@Service: ${JSON.stringify({
+        config,
+        target: target ?? "undefined",
+        finalConfig,
+      })}`
+    );
     Registrar.registerService(target, finalConfig);
   };
 };
@@ -120,6 +126,9 @@ export const Parameter = (paramKey: string | symbol | Constructor) => {
     key: string | symbol | undefined,
     index?: number
   ): void => {
+    console.log(
+      `@Parameter: ${JSON.stringify({ paramKey, target, key, index })}`
+    );
     if (typeof index === "number") {
       if (key !== undefined) {
         throw new NotInConstructorError();
