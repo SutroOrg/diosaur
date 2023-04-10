@@ -3,36 +3,34 @@ import { FunctionFactory } from "./Factory.ts";
 import Registrar from "./Metadata/Registrar.ts";
 import { Constructor, ServiceIdentifier } from "./Types.ts";
 
-import {
-  defaultConfig,
-  Factory,
-  Inject,
-  InjectAll,
-  Parameter,
-  SCOPES,
-  Service,
-  ServiceConfig,
-} from "./Decorators.ts";
+import { defaultConfig, SCOPES, ServiceConfig } from "./Decorators.ts";
 
 export type { IFactory, IAsyncFactory } from "./IFactory.ts";
 
-export { Service, Inject, InjectAll, Factory, Parameter };
-export type { IContainer };
+export {
+  Service,
+  Inject,
+  InjectAll,
+  Factory,
+  Parameter,
+} from "./Decorators.ts";
 
-export const getContainer = async (): Promise<IContainer> => {
+export type { IContainer } from "./Container.ts";
+
+export async function getContainer(): Promise<IContainer> {
   return await Registrar.build();
-};
+}
 
-export const refreshContainer = async (): Promise<IContainer> => {
+export async function refreshContainer(): Promise<IContainer> {
   return await Registrar.build(true);
-};
+}
 
-export const setParameter = (
+export async function setParameter(
   key: string | symbol | Constructor,
   value: any
-) => {
+) {
   Registrar.setParameter(key, value);
-};
+}
 
 type anonymousFactory = ((args: any[]) => Object) | Object;
 type asyncAnonymousFactory =
@@ -40,24 +38,24 @@ type asyncAnonymousFactory =
   | Object
   | Promise<Object>;
 
-export const register = (
+export async function register(
   identifier: ServiceIdentifier,
   factory: anonymousFactory,
   config: Partial<ServiceConfig> = {}
-) => {
+) {
   const maker = typeof factory === "function" ? factory : () => factory;
   const fnFactory = new FunctionFactory(maker as () => Object);
   Registrar.registerFactory(fnFactory, Symbol(identifier.toString()), {
     ...defaultConfig(identifier),
     ...config,
   });
-};
+}
 
-export const registerAsync = (
+export async function registerAsync(
   identifier: ServiceIdentifier,
   factory: asyncAnonymousFactory,
   config: Partial<ServiceConfig> = {}
-) => {
+) {
   const maker = typeof factory === "function" ? factory : () => factory;
   const finalConfig = { ...defaultConfig(identifier), ...config };
   const fnFactory = new FunctionFactory(maker as () => Object);
@@ -71,4 +69,4 @@ export const registerAsync = (
     Symbol(identifier.toString()),
     finalConfig
   );
-};
+}

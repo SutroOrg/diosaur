@@ -66,16 +66,25 @@ export const Factory = (
   };
 };
 
-/** Inject */
 export interface InjectConfig {
   tag: string | null;
   identifier: ServiceIdentifier;
   refresh: boolean;
 }
-interface InjectOptions extends Partial<InjectConfig> {
+interface InjectOptions extends Omit<Partial<InjectConfig>, "identifier"> {
   identifier: InjectConfig["identifier"];
 }
 
+/**
+ * The @Inject decorator indicates that a class property or function parameter should be populated from the DI container
+ *
+ * The `identifier` configuration value is required and can be a string, symbol or constructor. It cannot be an interface name, since
+ * those are erased at runtime
+ *
+ * A `tag` can be provided when using identifiers that are not unique.
+ *
+ * Setting `refresh` to `true` will refresh the injected instance each time it is resolved
+ */
 export const Inject = ({
   identifier,
   tag = null,
