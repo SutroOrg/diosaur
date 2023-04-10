@@ -1,4 +1,5 @@
 import { SCOPES } from "../Decorators.ts";
+import { Reflect } from "../Reflect.ts";
 import { UnregisteredServiceError } from "../Errors.ts";
 import {
   AttributeInjectAllService,
@@ -16,7 +17,12 @@ import {
   BaseInjectedService,
   ConstructorInjectedService,
 } from "../Metadata/ServiceInjection.ts";
-import { Constructor, ParameterBag, ServiceIdentifier } from "../Types.ts";
+import {
+  AnyObject,
+  Constructor,
+  ParameterBag,
+  ServiceIdentifier,
+} from "../Types.ts";
 import DependencyGraph from "./DependencyGraph.ts";
 import { Graph, Node } from "./Graph.ts";
 import LazyProxy from "./LazyProxy.ts";
@@ -230,16 +236,16 @@ class ServiceResolver {
     return tag;
   }
 
-  private instantiate(node: Node): object {
-    const config = node.data as RegisteredFactory<object>;
+  private instantiate(node: Node): AnyObject {
+    const config = node.data as RegisteredFactory<AnyObject>;
     const [constructorParams, attributes] = this.buildServiceDependencies(node);
     // Factory resolve is not async, we block it in decorator thus we can simply call resolve
     const service = config.factory.resolve(constructorParams);
     return this.postServiceCreation(service, attributes);
   }
 
-  private async instantiateAsync(node: Node): Promise<object> {
-    const config = node.data as RegisteredFactory<object>;
+  private async instantiateAsync(node: Node): Promise<AnyObject> {
+    const config = node.data as RegisteredFactory<AnyObject>;
     const [constructorParams, attributes] =
       await this.buildServiceDependenciesAsync(node);
     const service = await config.factory.resolve(constructorParams);
@@ -247,9 +253,9 @@ class ServiceResolver {
   }
 
   private postServiceCreation(
-    service: object,
+    service: AnyObject,
     attributes: { key: string | symbol; arg: any }[]
-  ): object {
+  ): AnyObject {
     attributes.forEach(({ key, arg }) => {
       Reflect.defineProperty(service, key, {
         get: () => arg,

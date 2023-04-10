@@ -1,5 +1,5 @@
 // deno-lint-ignore-file ban-types
-import { AnyObject } from "./Types.ts";
+import { AnyObject, Constructor } from "./Types.ts";
 
 function validateTarget(o: unknown, method: string): asserts o is AnyObject {
   if (typeof o !== "object" && o !== null) {
@@ -27,12 +27,11 @@ export class Reflect {
    * Caveat here is that `new.target` will not work
    */
   static construct(
-    target: Function,
+    target: Constructor,
     argumentsList: unknown[],
     newTarget: Function = target
   ): typeof newTarget {
-    const obj = Object.create(target.prototype);
-    return newTarget.apply(obj, argumentsList);
+    return new target(...argumentsList);
   }
 
   /**
@@ -40,7 +39,7 @@ export class Reflect {
    */
   static defineProperty(
     target: AnyObject,
-    propertyKey: string,
+    propertyKey: string | symbol,
     attributes: AnyObject
   ): boolean {
     validateTarget(target, "defineProperty");

@@ -1,5 +1,6 @@
 import { IFactory, IAsyncFactory, NoPromise } from "./IFactory.ts";
 import { Constructor } from "./Types.ts";
+import { Reflect } from "./Reflect.ts";
 
 export class BasicFactory<R> implements IFactory<R> {
   constructor(private targetType: Constructor) {}

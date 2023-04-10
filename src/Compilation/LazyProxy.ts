@@ -1,4 +1,5 @@
 import { Reflect } from "../Reflect.ts";
+import { Constructor } from "../Types.ts";
 class LazyProxy {
   constructor(provider: () => { [key: string]: any }) {
     const self = this;
@@ -41,7 +42,7 @@ class LazyProxy {
           return provider().apply(thisArg, args);
         },
         construct(_: {}, args: any[], __: Function) {
-          return Reflect.construct(provider() as Function, args);
+          return Reflect.construct(provider() as Constructor, args);
         },
       }
     ) as any;
