@@ -43,6 +43,7 @@ class DependencyGraph {
         identifier,
         registeredFactory.config.tag
       );
+      console.log(`Found factory with key ${key}`);
       if (key === undefined || key === null) {
         throw new Error(
           `The generated key for the following identifier came back undefined or null: ${JSON.stringify(
@@ -80,6 +81,9 @@ class DependencyGraph {
       const injectedServiceKey = DependencyGraph.serviceKey(
         injectedService.config.identifier,
         resolveTag(injectedService.config.tag, this.parameterBag)
+      );
+      console.log(
+        `Found request within ${serviceKey} to inject ${injectedServiceKey}`
       );
       if (!this.dependencyGraph.hasNode(injectedServiceKey)) {
         throw new MissingServiceDefinitionError(
@@ -192,7 +196,7 @@ class DependencyGraph {
         );
     }
 
-    return `${identifierString}${tag ? `(${tag})` : ""}`;
+    return `${identifierString}${tag === null || tag === "" ? "" : `(${tag})`}`;
   }
 
   static paramKey(identifier: ServiceIdentifier): string {
