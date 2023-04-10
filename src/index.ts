@@ -14,6 +14,8 @@ import {
   ServiceConfig,
 } from "./Decorators.ts";
 
+export type { IFactory, IAsyncFactory } from "./IFactory.ts";
+
 export { Service, Inject, InjectAll, Factory, Parameter };
 export type { IContainer };
 
