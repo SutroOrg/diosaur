@@ -31,7 +31,7 @@ const isConstructorParam = <T extends Object>(
 
 const isPropertyDeco = <T extends Object>(
   params: DecoratorParams<T>
-): params is [T, string, undefined] => {
+): params is [T & { constructor: Constructor<T> }, string, undefined] => {
   return (
     typeof params[1] === "string" &&
     (params[2] === undefined || params[2] === null)
@@ -125,21 +125,18 @@ interface InjectOptions {
  */
 export function Inject(injectOptions: InjectOptions) {
   return <T extends Object>(...params: DecoratorParams<T>) => {
+    const { identifier, tag = null, refresh = false } = injectOptions;
+    const finalConfig: InjectConfig = {
+      identifier,
+      tag,
+      refresh,
+    };
     if (isConstructorParam(params)) {
-      throw new InjectAsParameterError();
+      const [target, , paramIndex] = params;
+      Registrar.registerConstructorInject(target, paramIndex, finalConfig);
     } else if (isPropertyDeco(params)) {
       const [target, key] = params;
-      const { identifier, tag = null, refresh = false } = injectOptions;
-      const finalConfig: InjectConfig = {
-        identifier,
-        tag,
-        refresh,
-      };
-      Registrar.registerAttributeInject(
-        target.constructor as Constructor,
-        key,
-        finalConfig
-      );
+      Registrar.registerAttributeInject(target.constructor, key, finalConfig);
     } else {
       throw new Error(`Unhandled @Inject: ${JSON.stringify(params)}`);
     }
@@ -159,7 +156,7 @@ export function InjectAll(identifier: ServiceIdentifier, refresh = false) {
     } else if (isPropertyDeco(params)) {
       const [target, key] = params;
       Registrar.registerAttributeAllService(
-        target.constructor as Constructor,
+        target.constructor,
         identifier,
         key,
         refresh
@@ -184,11 +181,7 @@ export function Parameter(paramKey: string | symbol | Constructor) {
     } else if (isPropertyDeco(params)) {
       const [target, key] = params;
 
-      Registrar.registerAttributeParameter(
-        target.constructor as Constructor,
-        key,
-        paramKey
-      );
+      Registrar.registerAttributeParameter(target.constructor, key, paramKey);
       Object.defineProperty(target, key, {
         get: () => Registrar.getContainer().getParameter(paramKey),
       });
