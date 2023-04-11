@@ -5,7 +5,38 @@ import {
 } from "./Errors.ts";
 import { IFactory } from "./IFactory.ts";
 import Registrar from "./Metadata/Registrar.ts";
-import { Constructor, ServiceIdentifier } from "./Types.ts";
+import {
+  AnyObject,
+  Constructor,
+  ServiceClassIdentifier,
+  ServiceIdentifier,
+} from "./Types.ts";
+
+type DecoratorParams<T extends Object> =
+  | [
+      T | Constructor<T>, //target
+      string | symbol | undefined, // key
+      number | undefined // index
+    ]
+  | [
+      T | Constructor<T>, //target
+      string | symbol | undefined
+    ];
+
+const isConstructorParam = <T extends Object>(
+  params: DecoratorParams<T>
+): params is [Constructor<T>, undefined, number] => {
+  return params[1] === undefined && typeof params[2] === "number";
+};
+
+const isPropertyDeco = <T extends Object>(
+  params: DecoratorParams<T>
+): params is [T, string, undefined] => {
+  return (
+    typeof params[1] === "string" &&
+    (params[2] === undefined || params[2] === null)
+  );
+};
 
 /** Service */
 
@@ -93,17 +124,24 @@ interface InjectOptions {
  * @param injectOptions.refresh - If set to true, this makes sure that the injected instance is refreshed every time
  */
 export function Inject(injectOptions: InjectOptions) {
-  return (target: any, key: string | symbol, index?: number) => {
-    if (typeof index === "number") {
+  return <T extends Object>(...params: DecoratorParams<T>) => {
+    if (isConstructorParam(params)) {
       throw new InjectAsParameterError();
-    } else {
+    } else if (isPropertyDeco(params)) {
+      const [target, key] = params;
       const { identifier, tag = null, refresh = false } = injectOptions;
       const finalConfig: InjectConfig = {
         identifier,
         tag,
         refresh,
       };
-      Registrar.registerAttributeInject(target.constructor, key, finalConfig);
+      Registrar.registerAttributeInject(
+        target.constructor as Constructor,
+        key,
+        finalConfig
+      );
+    } else {
+      throw new Error(`Unhandled @Inject: ${JSON.stringify(params)}`);
     }
   };
 }
@@ -115,16 +153,19 @@ export function Inject(injectOptions: InjectOptions) {
  * @param injectOptions.refresh - If set to true, this makes sure that the injected instances are refreshed every time
  */
 export function InjectAll(identifier: ServiceIdentifier, refresh = false) {
-  return (target: any, key: string | symbol, index?: number) => {
-    if (typeof index === "number") {
+  return <T extends Object>(...params: DecoratorParams<T>) => {
+    if (isConstructorParam(params)) {
       throw new InjectAsParameterError();
-    } else {
+    } else if (isPropertyDeco(params)) {
+      const [target, key] = params;
       Registrar.registerAttributeAllService(
-        target.constructor,
+        target.constructor as Constructor,
         identifier,
         key,
         refresh
       );
+    } else {
+      throw new Error(`Unhandled @InjectAll: ${JSON.stringify(params)}`);
     }
   };
 }
@@ -135,27 +176,24 @@ export function InjectAll(identifier: ServiceIdentifier, refresh = false) {
  * @param paramKey Any valid service identifier will do here
  */
 export function Parameter(paramKey: string | symbol | Constructor) {
-  return (
-    target: any,
-    key: string | symbol | undefined,
-    index?: number
-  ): void => {
-    if (typeof index === "number") {
-      if (key !== undefined) {
-        throw new NotInConstructorError();
-      }
+  return <T extends Object>(...params: DecoratorParams<T>): void => {
+    if (isConstructorParam(params)) {
+      const [target, , index] = params;
 
       Registrar.registerConstructorParameter(target, index, paramKey);
-    } else {
-      if (key === undefined) {
-        throw new Error(
-          "Parameter injection failed because `key` is undefined in the decorator!"
-        );
-      }
-      Registrar.registerAttributeParameter(target.constructor, key, paramKey);
+    } else if (isPropertyDeco(params)) {
+      const [target, key] = params;
+
+      Registrar.registerAttributeParameter(
+        target.constructor as Constructor,
+        key,
+        paramKey
+      );
       Object.defineProperty(target, key, {
         get: () => Registrar.getContainer().getParameter(paramKey),
       });
+    } else {
+      throw new Error(`Unhandled @Parameter: ${JSON.stringify(params)} `);
     }
   };
 }
