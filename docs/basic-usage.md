@@ -22,6 +22,8 @@ What did we actually do here? By decorating the `MyService` class with the `@Ser
 this class is a service and its lifecycle must be handled. It could be a dependency and be
 injected in other services as well as require some dependencies as we'll now.
 
+As a convenience, you can also use `@Repository` to mark a class - it's an alias for `@Service`, but if you're following an n-tier architecture, it can make things more explicit.
+
 ### Injecting dependencies
 
 Your services will probably require other services to work, for example a database connection,

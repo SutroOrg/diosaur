@@ -80,6 +80,11 @@ export function Service(config: Partial<ServiceConfig> = {}) {
   };
 }
 
+/**
+ * A useful alias for @Service
+ */
+export const Repository = Service;
+
 /** Factory */
 export function Factory(
   createdService: ServiceIdentifier,

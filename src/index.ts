@@ -8,6 +8,7 @@ import { defaultConfig, SCOPE, ServiceConfig } from "./Decorators.ts";
 export type { IFactory, IAsyncFactory } from "./IFactory.ts";
 
 export {
+  Repository,
   Service,
   Inject,
   InjectAll,
